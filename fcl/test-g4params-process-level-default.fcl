@@ -1,0 +1,123 @@
+// #include "detectorDefaults.fcl"
+process_name:processA
+
+source: 
+{
+  module_type: EmptyEvent
+  maxEvents:  5000
+}
+
+services: 
+{
+
+  message : 
+  {
+     debugModules : ["*"]
+     suppressInfo : []    
+     destinations : 
+     {
+       LogToConsole : 
+       {
+         type : "cout"
+         threshold : "DEBUG"
+         categories : 
+	 {
+           default : { limit : 50 }
+         }
+       }
+     }
+  }
+
+  TFileService :
+  {
+    fileName: "HARPBertini-ProcL.root"
+  }
+
+  user: 
+  {
+
+//     RandomNumberGenerator: {}
+         
+     PhysModelConfig: 
+     {
+//        Verbosity: true
+     }
+     
+     ProcLevelSimSetup:
+     {
+        HadronicModelName: "Bertini"
+	TargetNucleus: "Pb"
+	RNDMSeed: 12345
+     }
+
+  }
+
+}
+
+outputs: 
+{
+   out1: 
+   {
+      module_type: RootOutput   
+      fileName: "EvtBertini-ProcL.root"
+   }
+}
+
+physics: {
+
+  producers: 
+  {
+
+     PrimaryGenerator:
+     {
+        module_type: EventGenerator
+	nparticles : 1
+	momentum: [ 0., 0., 5. ] // in GeV 
+     }
+
+     G4BertiniDefault:
+     {
+        module_type: ProcLevelMPVaryProducer
+	//
+//        RNDMSeed: 54321
+	Verbosity: 0
+//
+// NOTE: Better do it via some kind of central service to protect
+//       against mixing different target nuclei in the same job !!!
+//
+//	TargetNucleus: "Pb"
+	HadronicModel:
+	{
+//	   ModelName: "Bertini"
+	   DefaultPhysics: true
+	   ModelParameters:
+	   {
+	   }
+	}
+     }
+  }
+      
+  analyzers:
+  {
+  
+     BertiniDefaultHARP:
+     {
+        module_type: AnalyzerHARP
+	ProductLabel: "G4BertiniDefault"
+     }
+       
+  }
+  
+  path1:   [ PrimaryGenerator, G4BertiniDefault ] 
+  path2:   [ BertiniDefaultHARP ]
+  stream1: [ out1 ]
+
+  trigger_paths: [ path1 ]
+  //
+  // NOTE: Remember, if you have an end_path, you should put your analyzer(s) there !
+  //       Otherwise, they will NOT be included in the exec.
+  //       If you don't have an end_path, things will magically work though... 
+  //        
+  end_paths:     [ path2, stream1 ]
+
+}

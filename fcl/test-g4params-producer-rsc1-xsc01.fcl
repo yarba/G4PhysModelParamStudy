@@ -1,0 +1,113 @@
+// #include "detectorDefaults.fcl"
+process_name:processA
+
+source: 
+{
+  module_type: EmptyEvent
+  maxEvents:  5000
+}
+
+services: 
+{
+
+  message : 
+  {
+     debugModules : ["*"]
+     suppressInfo : []    
+     destinations : 
+     {
+       LogToConsole : 
+       {
+         type : "cout"
+         threshold : "DEBUG"
+         categories : 
+	 {
+           default : { limit : 50 }
+         }
+       }
+     }
+  }
+
+  TFileService :
+  {
+    fileName: "G4BertiniParamRSc1XSc01.root"
+  }
+
+  user: 
+  {
+
+     RandomNumberGenerator: {}
+    
+    // Action(s) for the simulation
+//    ClockAction: {}
+
+  }
+
+}
+
+outputs: 
+{
+   out1: 
+   {
+      module_type: RootOutput   
+      fileName: "BertiniRSc1XSc01.root"
+   }
+}
+
+physics: {
+
+  producers: 
+  {
+
+     PrimaryGenerator:
+     {
+        module_type: EventGenerator
+	nparticles : 1
+	momentum: [ 0., 0., 5. ] // in GeV 
+     }
+
+     G4BertiniRSc1XSc01:
+     {
+        module_type: ModelParamStudyProducer
+	//
+        RNDMSeed: 54321
+        TargetGeom:
+        {
+           targetSize: [ 0., 31.5, 1600. ]
+	   targetPosition: [ 0, 0, 0 ]
+	   targetMaterial: "Be"
+	   targetShape: "G4Tubs"
+        }
+	PhysicsList: "QGSP_FTFP_BERT"
+	Verbosity: 0
+	DefaultPhysics: false
+	BertiniConfig: ["/process/had/cascade/nuclearRadiusScale 1.0",
+	                "/process/had/cascade/crossSectionScale 0.1"]
+     }
+
+  }
+  
+  analyzers:
+  {
+  
+     HARPRSc1XSc01:
+     {
+        module_type: AnalyzerHARP
+	ProductLabel: "G4BertiniRSc1XSc01"
+     }
+  
+  }
+  
+  path1:   [ PrimaryGenerator, G4BertiniRSc1XSc01 ] 
+  path2:   [ HARPRSc1XSc01  ]
+  stream1: [ out1 ]
+
+  trigger_paths: [ path1 ]
+  //
+  // NOTE: Remember, if you have an end_path, you should put your analyzer(s) there !
+  //       Otherwise, they will NOT be included in the exec.
+  //       If you don't have an end_path, things will magically work though... 
+  //        
+  end_paths:     [ path2, stream1 ]
+
+}

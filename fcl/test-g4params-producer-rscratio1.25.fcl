@@ -1,0 +1,133 @@
+// #include "detectorDefaults.fcl"
+process_name:processA
+
+source: 
+{
+  module_type: EmptyEvent
+  maxEvents:  10
+}
+
+services: 
+{
+
+  message : 
+  {
+     debugModules : ["*"]
+     suppressInfo : []    
+     destinations : 
+     {
+       LogToConsole : 
+       {
+         type : "cout"
+         threshold : "DEBUG"
+         categories : 
+	 {
+           default : { limit : 50 }
+         }
+       }
+     }
+  }
+
+  TFileService :
+  {
+    fileName: "HARPBertiniRScaleByRatio1.25.root"
+  }
+
+  user: 
+  {
+
+     RandomNumberGenerator: {}
+
+//     DetectorHolder: {}
+//     GDMLDetector:
+//     {
+//        category: "world"
+//	gdmlFileName_: "./gdml/be_target.gdml"
+//     }
+
+     PhysicsListHolder: {}
+     PhysicsList: 
+     {
+        PhysicsListName: "QGSP_FTFP_BERT"
+     }
+     
+     PhysModelConfig: 
+     {
+//        Verbosity: true
+     }
+         
+  }
+
+}
+
+outputs: 
+{
+   out1: 
+   {
+      module_type: RootOutput   
+      fileName: "EvtBertiniRScaleByRatio1.25.root"
+   }
+}
+
+physics: {
+
+  producers: 
+  {
+
+     PrimaryGenerator:
+     {
+        module_type: EventGenerator
+	nparticles : 1
+	momentum: [ 0., 0., 5. ] // in GeV 
+     }
+
+     G4BertiniRSc125:
+     {
+        module_type: ModelParamStudyProducer
+	//
+        RNDMSeed: 54321
+        TargetGeom:
+        {
+           targetSize: [ 0., 3.15, 160. ]
+	   targetPosition: [ 0, 0, 0 ]
+	   targetMaterial: "Pb"
+	   targetShape: "G4Tubs"
+        }
+	Verbosity: 0
+	HadronicModelParameters:
+	{
+	   DefaultPhysics: false
+	   Bertini:
+	   {
+//	      Verbosity: true
+	      RadiusScaleByRatio: 1.25
+	   }
+	}
+     }
+
+  }
+  
+  analyzers:
+  {
+  
+     HARPTest:
+     {
+        module_type: AnalyzerHARP
+	ProductLabel: "G4BertiniRSc125"
+     }
+  
+  }
+  
+  path1:   [ PrimaryGenerator, G4BertiniRSc125 ] 
+  path2:   [ HARPTest  ]
+  stream1: [ out1 ]
+
+  trigger_paths: [ path1 ]
+  //
+  // NOTE: Remember, if you have an end_path, you should put your analyzer(s) there !
+  //       Otherwise, they will NOT be included in the exec.
+  //       If you don't have an end_path, things will magically work though... 
+  //        
+  end_paths:     [ path2, stream1 ]
+
+}

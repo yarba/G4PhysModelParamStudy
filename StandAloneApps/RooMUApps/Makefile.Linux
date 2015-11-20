@@ -1,0 +1,22 @@
+CXX = g++
+CXXFLAGS = `$(ROOMU_SYS)/bin/roomu-config --cflags`
+LDLIBS = `$(ROOMU_SYS)/bin/roomu-config --libs`
+
+BINARIES = ComposeRooMUSummary ReadRooMUSummary
+TARGETS = ComposeRooMUSummary.o ReadRooMUSummary.o
+
+#--- if using 'make all' ---#
+all : $(TARGETS)
+
+#--- if making individual targets ---#
+
+ComposeRooMUSummary.o : ComposeRooMUSummary.cxx
+	$(CXX) $(CXXFLAGS) -I$(ROOMU_SYS) -o $*.o -c $*.cxx #compile
+	$(CXX) -o $* $*.o $(LDLIBS)        #link
+
+ReadRooMUSummary.o : ReadRooMUSummary.cxx
+	$(CXX) $(CXXFLAGS) -I$(ROOMU_SYS) -o $*.o -c $*.cxx #compile
+	$(CXX) -o $* $*.o $(LDLIBS)        #link
+
+clean:
+	rm -f $(BINARIES) $(TARGETS)

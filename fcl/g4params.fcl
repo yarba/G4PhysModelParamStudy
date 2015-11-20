@@ -1,0 +1,122 @@
+// #include "detectorDefaults.fcl"
+process_name:processA
+
+source: 
+{
+  module_type: EmptyEvent
+  maxEvents:  250
+}
+
+services: 
+{
+
+  message : 
+  {
+     debugModules : ["*"]
+     suppressInfo : []    
+     destinations : 
+     {
+       LogToConsole : 
+       {
+         type : "cout"
+         threshold : "DEBUG"
+         categories : 
+	 {
+           default : { limit : 50 }
+         }
+       }
+     }
+  }
+
+  TFileService :
+  {
+    fileName: "G4ModelParamStudy.root"
+  }
+
+  user: 
+  {
+
+//     RandomNumberGenerator: {}
+    
+     G4ModelParamStudy:
+     {
+        RNDMSeed: 54321
+        TargetGeom:
+        {
+           targetSize: [ 0., 31.5, 1600. ]
+	   targetPosition: [ 0, 0, 0 ]
+	   targetMaterial: "Be"
+	   targetShape: "G4Tubs"
+        }
+	PhysicsList: "QGSP_FTFP_BERT"
+     }
+
+    // Action(s) for the simulation
+//    ClockAction: {}
+
+  }
+
+}
+
+//outputs: 
+//{
+//out1: {
+//  module_type: RootOutput   
+//  fileName: "exampleTestingout.root"
+//  }
+//}
+
+physics: {
+
+  producers: 
+  {
+
+     PrimaryGenerator:
+     {
+        module_type: EventGenerator
+	nparticles : 1
+	momentum: [ 0., 0., 5. ] // in GeV 
+     }
+
+  }
+
+  analyzers: 
+  {
+     
+     G4BertiniDefaultVsHARP:
+     {
+        module_type: ModelParamStudyHARP
+	//
+	Verbosity: 0
+	DefaultPhysics: true
+	ModelParamCommands: []
+     }
+     G4BertiniModi1VsHARP:
+     {
+        module_type: ModelParamStudyHARP
+	//
+	Verbosity: 0
+	DefaultPhysics: false
+	ModelParamCommands: [ "/process/had/cascade/nuclearRadiusScale 1.4" ]
+     }
+     G4BertiniModi2VsHARP:
+     {
+        module_type: ModelParamStudyHARP
+	//
+	Verbosity: 0
+	DefaultPhysics: false
+	ModelParamCommands: [ "/process/had/cascade/nuclearRadiusScale 5.6" ]
+     }
+
+  }
+  
+  path1: [ PrimaryGenerator ] 
+  path2: [ G4BertiniDefaultVsHARP, G4BertiniModi1VsHARP, G4BertiniModi2VsHARP  ]
+//  path2: [ G4BertiniDefaultVsHARP  ]
+//  path2: [ G4ModelParamDefault, G4ModelParamModification1 ]
+//  stream1:  [ out1, CheckHits,CheckInteractions ]
+
+  trigger_paths: [ path1 ]
+//  end_paths: [ stream1 ]
+
+}

@@ -1,0 +1,10 @@
+<!--  -->
+<!--  $Id: Exp $     -->
+<!--  -->
+
+<lcgdict>
+ <class name="artg4tk::ArtG4tkVtx"/>
+ <class name="artg4tk::ArtG4tkParticle"/>
+ <class name="std::vector<artg4tk::ArtG4tkParticle>"/>
+ <class name="art::Wrapper<artg4tk::ArtG4tkVtx>"/>
+</lcgdict>

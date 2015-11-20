@@ -1,0 +1,129 @@
+// #include "detectorDefaults.fcl"
+process_name:processA
+
+source: 
+{
+  module_type: EmptyEvent
+  maxEvents:  5
+}
+
+services: 
+{
+
+  message : 
+  {
+     debugModules : ["*"]
+     suppressInfo : []    
+     destinations : 
+     {
+       LogToConsole : 
+       {
+         type : "cout"
+         threshold : "DEBUG"
+         categories : 
+	 {
+           default : { limit : 50 }
+         }
+       }
+     }
+  }
+
+  TFileService :
+  {
+    fileName: "G4ModelParamStudySummary.root"
+  }
+
+  user: 
+  {
+    
+     G4ModelParamStudy:
+     {
+        RNDMSeed: 54321
+        TargetGeom:
+        {
+           targetSize: [ 0., 31.5, 1600. ]
+	   targetPosition: [ 0, 0, 0 ]
+	   targetMaterial: "Be"
+	   targetShape: "G4Tubs"
+        }
+	PhysicsList: "QGSP_FTFP_BERT"
+     }
+
+  }
+
+}
+
+physics: {
+
+  producers: 
+  {
+
+     PrimaryGenerator:
+     {
+        module_type: EventGenerator
+	nparticles : 1
+	momentum: [ 0., 0., 5. ] // in GeV 
+     }
+
+  }
+
+  analyzers: 
+  {
+     
+     G4BertiniDefaultVsHARP:
+     {
+        module_type: ModelParamStudyHARP
+	Verbosity: 0
+	DefaultPhysics: true
+	ModelParamCommands: []
+     }
+     G4BertiniModi1VsHARP:
+     {
+        module_type: ModelParamStudyHARP
+	Verbosity: 0
+	DefaultPhysics: false
+	// Default=2.81967; "fake sigma"=1.4; thus the value=2.81967-sigma=1.41967
+	ModelParamCommands: [ "/process/had/cascade/nuclearRadiusScale 1.41967" ]
+     }
+     G4BertiniModi2VsHARP:
+     {
+        module_type: ModelParamStudyHARP
+	Verbosity: 0
+	DefaultPhysics: false
+	// Default=2.81967; "fake sigma"=1.4; thus the value=2.81967-0.5*sigma=2.11967
+	ModelParamCommands: [ "/process/had/cascade/nuclearRadiusScale 2.11967" ]
+     }
+     G4BertiniModi3VsHARP:
+     {
+        module_type: ModelParamStudyHARP
+	Verbosity: 0
+	DefaultPhysics: false
+	// Default=2.81967; "fake sigma"=1.4; thus the value=2.81967+0.5*sigma=3.51967
+	ModelParamCommands: [ "/process/had/cascade/nuclearRadiusScale 3.51967" ]
+     }
+     G4BertiniModi4VsHARP:
+     {
+        module_type: ModelParamStudyHARP
+	Verbosity: 0
+	DefaultPhysics: false
+	// Default=2.81967; "fake sigma"=1.4; thus the value=2.81967+sigma=4.21967
+	ModelParamCommands: [ "/process/had/cascade/nuclearRadiusScale 4.21967" ]
+     }
+     
+     RooMUHistSummary:
+     {
+        module_type: RooMUHistSummary
+	//
+	Verbosity: 0
+	G4DefaultDirectory: "G4BertiniDefaultVsHARP"
+	G4VariantDirectories: [ "G4BertiniModi1VsHARP", "G4BertiniModi2VsHARP", "G4BertiniModi3VsHARP", "G4BertiniModi4VsHARP" ]
+     }
+
+  }
+  
+  path1: [ PrimaryGenerator ] 
+  path2: [ G4BertiniDefaultVsHARP, G4BertiniModi1VsHARP, G4BertiniModi2VsHARP, G4BertiniModi3VsHARP, G4BertiniModi4VsHARP, RooMUHistSummary  ]
+
+  trigger_paths: [ path1 ]
+
+}
