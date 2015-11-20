@@ -1,0 +1,99 @@
+// #include "detectorDefaults.fcl"
+process_name:processA
+
+source: 
+{
+  module_type: EmptyEvent
+  maxEvents:  100
+}
+
+services: 
+{
+
+  message : 
+  {
+     debugModules : ["*"]
+     suppressInfo : []    
+     destinations : 
+     {
+       LogToConsole : 
+       {
+         type : "cout"
+         threshold : "DEBUG"
+         categories : 
+	 {
+           default : { limit : 50 }
+         }
+       }
+     }
+  }
+
+  user: 
+  {
+
+// NOTE: I wish I could use it but...
+//       ...one can NOT create engine from a Service,...
+//       ...only from an EDProducer (inheritance and friendship)
+//
+//     RandomNumberGenerator: {}
+        
+// Yes, it's a Service
+//
+     G4ModelParamStudy:
+     {
+        seed: 54321
+        targetGeom:
+        {
+           targetSize: [ 0., 31.5, 1600. ] // in mm
+	   targetPosition: [ 0, 0, 0 ] // in mm
+	   targetMaterial: "Be"
+	   targetShape: "G4Tubs"
+        }
+	physicsList: "QGSP_FTFP_BERT"
+     }
+
+  }
+
+}
+
+//outputs: 
+//{
+//out1: {
+//  module_type: RootOutput   
+//  fileName: "exampleTestingout.root"
+//  }
+//}
+
+physics: {
+
+  producers: 
+  {
+
+     PrimaryGenerator:
+     {
+        module_type: EventGenerator
+	nparticles : 1
+	momentum: [ 0., 0., 5. ] // in GeV 
+     }
+
+  }
+
+  analyzers: 
+  {
+     
+     G4ToyAnalyzer:
+     {
+        module_type: G4ToyAnalyzer
+	verbosity: 1
+     }
+
+  }
+
+  path1: [ PrimaryGenerator ] 
+  path2: [ G4ToyAnalyzer ]
+//  stream1:  [ out1, CheckHits,CheckInteractions ]
+
+  trigger_paths: [ path1, path2 ]
+//  end_paths: [ stream1 ]
+
+}
